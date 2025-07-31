@@ -1,11 +1,21 @@
 import psycopg2
+import time
 
-conn = psycopg2.connect(
-    host="db",
-    user="user",
-    password="password",
-    dbname="mydb"
-)
+for attempt in range(10):
+    try:
+        conn = psycopg2.connect(
+            host="db",
+            user="user",
+            password="password",
+            dbname="mydb"
+        )
+        break
+    except psycopg2.OperationalError as e:
+        print("Database not ready, retrying in 2 seconds...")
+        time.sleep(2)
+else:
+    print("Could not connect to the database after several attempts.")
+    exit(1)
 
 cursor = conn.cursor()
 
@@ -16,25 +26,4 @@ CREATE TABLE IF NOT EXISTS students (
     age INT
 )
 """)
-
-students = [
-    (100, 'Manoj', 22),
-    (99, 'Mick', 24),
-    (98, 'Raj', 25)
-]
-
-# ...existing code...
-cursor.executemany(
-    "INSERT INTO students (student_id, name, age) VALUES (%s, %s, %s) ON CONFLICT (student_id) DO NOTHING",
-    students
-)
-# ...existing code...  
-conn.commit()
-
-cursor.execute("SELECT * FROM students")
-rows = cursor.fetchall()
-for row in rows:
-    print(row)
-
-cursor.close()
-conn.close()
+# ...rest of your code...
